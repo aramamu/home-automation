@@ -1,6 +1,29 @@
-from google.cloud import speech
+import speech_recognition as speech
 import api_keys as keys
 
-def transcribe(audio_bytes):
-	 speech_client = speech.Client()
-	 audio_sample = speech_client.sample(audio_bytes, source_uri=None, encoding="LINEAR16", sample_rate=16000
+
+recognizer = speech.Recognizer()
+
+def capture_audio():
+	with speech.Microphone() as source:
+		print("Talk")
+		audio = recognizer.listen(source)
+	return audio
+
+def transcribe_google_speech(audio):
+	transcript = None
+	try:
+		transcript = recognizer.recognize_google(audio)
+	except speech.UnknownValueError:
+		print("Google did not understand the audio")
+	except speech.RequestError as e:
+		print("Could not request transcript from google: {}".format(e))
+	return transcript
+
+def print_transcript(transcript):
+	print("Transcript: {}".format(transcript))
+
+def capture_and_transcribe():
+	print_transcript(transcribe_google_speech(capture_audio()))
+
+capture_and_transcribe()
